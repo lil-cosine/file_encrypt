@@ -1,5 +1,5 @@
 use aes::Aes128;
-use base64::encode;
+use base64::{decode, encode};
 use ctr::cipher::{NewCipher, StreamCipher};
 use generic_array::GenericArray;
 use rand::rngs::OsRng;
@@ -23,13 +23,13 @@ fn main() {
         let mut cipher = ctr::Ctr128BE::<Aes128>::new(&key, &nonce);
         encrypt(cipher, &args[2]);
     } else if &args[1] == "--decrypt" || &args[1] == "-d" {
-        // let vals = retrive_key();
-        // let key_bytes = base64::decode(&vals.0).expect("Invalid base64 key");
-        // let nonce_bytes = base64::decode(&vals.1).expect("Invalid base64 nonce");
-        // let key = GenericArray::from_slice(&key_bytes);
-        // let nonce = GenericArray::from_slice(&nonce_bytes);
-        // let mut cipher = ctr::Ctr128BE::<Aes128>::new(&key, &nonce);
-        // decrypt(cipher, &args[2]);
+        let vals = retrive_key();
+        let key_bytes = base64::decode(&vals.0).expect("Invalid base64 key");
+        let nonce_bytes = base64::decode(&vals.1).expect("Invalid base64 nonce");
+        let key = GenericArray::from_slice(&key_bytes);
+        let nonce = GenericArray::from_slice(&nonce_bytes);
+        let mut cipher = ctr::Ctr128BE::<Aes128>::new(&key, &nonce);
+        decrypt(cipher, &args[2]);
     } else if &args[1] == "--help" || &args[1] == "-h" {
         help();
     } else if &args[1] == "-r" {
@@ -86,11 +86,23 @@ fn help() {
 fn encrypt<C: StreamCipher>(mut cipher: C, file_name: &str) {
     let path = Path::new(file_name);
     let mut file = File::open(file_name).expect("File not found");
-    let mut contents = String::new();
-    file.read_to_string(&mut contents)
+    let mut contents = Vec::new();
+    file.read_to_end(&mut contents)
         .expect("Could not read file");
-    let mut encrypted = vec![0u8; contents.len()];
+    let mut encrypted = contents.clone();
     cipher.apply_keystream(&mut encrypted);
-    fs::write(path, encrypted).expect("Unable to write file");
+    fs::write(path, encode(&encrypted)).expect("Unable to write file");
     println!("File encrypted successfully");
+}
+
+fn decrypt<C: StreamCipher>(mut cipher: C, file_name: &str) {
+    let path = Path::new(file_name);
+    let mut file = File::open(file_name).expect("File not found");
+    let mut buffer = Vec::new();
+    file.read_to_end(&mut buffer).expect("Could not read file");
+    let decoded_buffer = decode(&buffer).expect("Invalid base64");
+    let mut decrypted = decoded_buffer.clone();
+    cipher.apply_keystream(&mut decrypted);
+    fs::write(path, decrypted).expect("Unable to write file");
+    println!("File decrypted successfully");
 }
