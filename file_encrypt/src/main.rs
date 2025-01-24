@@ -45,6 +45,8 @@ fn help() {
     println!("  -d, --decrypt    Decrypt a file");
     println!("  -h, --help       Display this help message");
     println!("  -r               Recursively encrypt or decrypt a directory");
+    println!("  generate         Generate a random key and nonce");
+    println!("                   which are not stored anywhere");
     println!();
     println!("Examples:");
     println!("  file_encrypt -e file.txt");
