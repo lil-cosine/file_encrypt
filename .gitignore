@@ -6,3 +6,9 @@ target/
 
 # MSVC Windows builds of rustc generate these, which store debugging information
 *.pdb
+
+key.txt
+nonce.txt
+file_encrypt/src/key.txt
+file_encrypt/src/nonce.txt
+text.txt
