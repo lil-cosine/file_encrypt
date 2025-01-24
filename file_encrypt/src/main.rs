@@ -20,7 +20,7 @@ fn main() {
         let nonce_bytes = base64::decode(&vals.1).expect("Invalid base64 nonce");
         let key = GenericArray::from_slice(&key_bytes);
         let nonce = GenericArray::from_slice(&nonce_bytes);
-        let mut cipher = ctr::Ctr128BE::<Aes128>::new(&key, &nonce);
+        let cipher = ctr::Ctr128BE::<Aes128>::new(&key, &nonce);
         encrypt(cipher, &args[2]);
     } else if &args[1] == "--decrypt" || &args[1] == "-d" {
         let vals = retrive_key();
@@ -28,7 +28,7 @@ fn main() {
         let nonce_bytes = base64::decode(&vals.1).expect("Invalid base64 nonce");
         let key = GenericArray::from_slice(&key_bytes);
         let nonce = GenericArray::from_slice(&nonce_bytes);
-        let mut cipher = ctr::Ctr128BE::<Aes128>::new(&key, &nonce);
+        let cipher = ctr::Ctr128BE::<Aes128>::new(&key, &nonce);
         decrypt(cipher, &args[2]);
     } else if &args[1] == "--help" || &args[1] == "-h" {
         help();
