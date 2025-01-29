@@ -7,6 +7,7 @@ use rand::RngCore;
 use std::env;
 use std::fs;
 use std::fs::File;
+use std::io;
 use std::io::prelude::*;
 use std::path::Path;
 
@@ -59,6 +60,23 @@ fn main() {
 }
 
 fn generate_key() {
+    let key_path: &Path = Path::new("src/key.txt");
+    let nonce_path: &Path = Path::new("src/nonce.txt");
+
+    if key_path.exists() && nonce_path.exists() {
+        println!("WARNING! A key and nonce already exist. Regenerating these files will cause perminant loss to all encrypted file.");
+        print!("If you are sure you want to regenerate these values enter 'yes': ");
+        io::stdout().flush().unwrap();
+
+        let mut user_input = String::new();
+        io::stdin()
+            .read_line(&mut user_input)
+            .expect("failed to read line");
+        if user_input.trim() != "yes" {
+            println!("Regeneration aborted");
+            return;
+        }
+    }
     let mut gen = OsRng;
     let mut key: Vec<u8> = vec![0u8; 16];
     gen.fill_bytes(&mut key);
@@ -97,14 +115,14 @@ fn help() {
     println!("  -d, --decrypt    Decrypt a file");
     println!("  -h, --help       Display this help message");
     println!("  -r               Recursively encrypt or decrypt a directory");
-    println!("  generate         Generate a random key and nonce");
-    println!("                   which are not stored anywhere");
+    println!("  generate         Generates a random key and nonce");
+    println!("                   and stores them in txt files in the root directory");
     println!();
     println!("Examples:");
-    println!("  file_encrypt -e file.txt");
-    println!("  file_encrypt -d file.txt");
-    println!("  file_encrypt -r -e directory");
-    println!("  file_encrypt -r -d directory");
+    println!("  file_encrypt -e <files>");
+    println!("  file_encrypt -d <files>");
+    println!("  file_encrypt -r -e <directory>");
+    println!("  file_encrypt -r -d <directory>");
 }
 
 fn encrypt<C: StreamCipher>(mut cipher: C, file_name: &str) {
